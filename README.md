@@ -4,7 +4,7 @@ This repository contains a snapshot of [LZMA SDK v26.00](https://www.7-zip.org/s
 
 ## Pre-complied binary
 
-Currently we build for those platform:
+Currently we build LZMACon (`lzma.exe` `lzma-sdk\CPP\7zip\Bundles\LzmaCon`) for those platform:
 
 - Windows x64
 - Linux x64

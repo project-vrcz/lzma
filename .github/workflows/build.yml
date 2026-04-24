@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+
+    env:
+      VISUAL_STUDIO_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise
+      LZMA_SDK_PATH: ${{ github.workspace }}/lzma-sdk
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # See lzma-sdk/DOC/lzma-sdk.txt > How to compile with makefile in Windows
+      - name: Build
+        shell: cmd
+        working-directory: ${{ env.LZMA_SDK_PATH }}
+        run: |
+          cd CPP\7zip\Bundles\LzmaCon\
+          %VISUAL_STUDIO_PATH%\VC\Auxiliary\Build\vcvars64.bat
+          nmake
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: lzma-con-windows-x64
+          path: ${{ env.LZMA_SDK_PATH }}\CPP\7zip\Bundles\LzmaCon\x64\lzma.exe

@@ -27,6 +27,7 @@ jobs:
 
     env:
       PATH_TO_ARTIFACTS: ${{ github.workspace }}/artifacts
+      PATH_TO_RELEASE_ASSETS: ${{ github.workspace }}/release-assets
 
     steps:
       - name: Download Artifact
@@ -35,6 +36,21 @@ jobs:
           path: ${{ env.PATH_TO_ARTIFACTS }}
           merge-multiple: true
 
+      - name: Create release ZIPs
+        env:
+          ARTIFACT_PATH: ${{ env.PATH_TO_ARTIFACTS }}
+          OUTPUT_PATH: ${{ env.PATH_TO_RELEASE_ASSETS }}
+        run: |
+          set -eux
+          mkdir $OUTPUT_PATH
+          cd $ARTIFACT_PATH
+
+          for f in *; do
+            [ -e "$f" ] || continue
+            (cd "$f" && zip -r "$OUTPUT_PATH/${f}.zip" .)
+          done
+        shell: bash
+
       - name: Create Release
         shell: bash
         env:
@@ -42,7 +58,7 @@ jobs:
         run: |
           gh release create \
           ${{ inputs.tag }} \
-          ${{ env.PATH_TO_ARTIFACTS }}/* \
+          ${{ env.PATH_TO_RELEASE_ASSETS }}/* \
           --repo ${{ github.repository }} \
           --target ${{ github.sha }} \
           --title ${{ inputs.tag }} \

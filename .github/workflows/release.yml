@@ -1,0 +1,50 @@
+name: Release
+
+concurrency:
+  group: releasing
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: true
+        description: Git Tag to Release, e.g v1.0.0
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-slim
+
+    permissions:
+      contents: write
+
+    env:
+      PATH_TO_ARTIFACTS: ${{ github.workspace }}/artifacts
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v8
+        with:
+          path: ${{ env.PATH_TO_ARTIFACTS }}
+          merge-multiple: true
+
+      - name: Create Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create \
+          ${{ inputs.tag }} \
+          ${{ env.PATH_TO_ARTIFACTS }}/* \
+          --repo ${{ github.repository }} \
+          --target ${{ github.sha }} \
+          --title ${{ inputs.tag }} \
+          --generate-notes \
+          --latest

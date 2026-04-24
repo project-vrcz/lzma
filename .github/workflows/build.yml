@@ -41,3 +41,58 @@ jobs:
         with:
           name: lzma-con-windows-x64
           path: ${{ env.LZMA_SDK_PATH }}\CPP\7zip\Bundles\LzmaCon\x64\lzma.exe
+
+  build-linux-x64:
+    runs-on: ubuntu-24.04
+
+    env:
+      LZMA_SDK_PATH: ${{ github.workspace }}/lzma-sdk
+      ASMC_PATH: ${{ github.workspace }}/asmc
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # See lzma-sdk/DOC/lzma-sdk.txt > UNIX/Linux version
+      # Use Debian 11 for glibc compatibility
+      - name: Build
+        shell: bash
+        run: |
+          docker run --rm -v $LZMA_SDK_PATH:/lzma-sdk debian:11-slim /bin/bash -c '
+          echo ::group::Install dependencies
+          apt-get update
+          apt-get install "g++" gcc make git -y
+          echo ::endgroup::
+          
+          # compile and install ASMC
+          echo ::group::Checkout ASMC
+          mkdir /tmp/asmc
+          cd /tmp/asmc
+          
+          git init
+          git remote add origin https://github.com/nidud/asmc.git
+          git fetch --depth 1 origin 6be9f76220c8ef86b70bf87af00dc11775a1f3b6
+          git checkout FETCH_HEAD
+          echo ::endgroup::
+          
+          echo ::group::Compile ASMC
+          cd source/asmc
+          make
+          echo ::endgroup::
+          
+          echo ::group::Install ASMC
+          cp ./asmc64 /usr/bin/asmc
+          echo ::endgroup::
+          
+          # compile LzmaCon
+          echo ::group::Compile LzmaCon
+          cd /lzma-sdk/CPP/7zip/Bundles/LzmaCon
+          make -j -f ../../cmpl_gcc_x64.mak
+          echo ::endgroup::
+          '
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: lzma-con-linux-x64
+          path: ${{ env.LZMA_SDK_PATH }}/CPP/7zip/Bundles/LzmaCon/b/g_x64/lzma

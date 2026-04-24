@@ -34,7 +34,6 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: ${{ env.PATH_TO_ARTIFACTS }}
-          merge-multiple: true
 
       - name: Create release ZIPs
         env:

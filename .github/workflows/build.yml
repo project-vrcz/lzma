@@ -27,7 +27,7 @@ jobs:
         working-directory: ${{ env.LZMA_SDK_PATH }}
         run: |
           cd CPP\7zip\Bundles\LzmaCon\
-          %VISUAL_STUDIO_PATH%\VC\Auxiliary\Build\vcvars64.bat
+          "%VISUAL_STUDIO_PATH%\VC\Auxiliary\Build\vcvars64.bat"
           nmake
 
       - name: Upload artifact

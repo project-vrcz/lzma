@@ -27,8 +27,14 @@ jobs:
         working-directory: ${{ env.LZMA_SDK_PATH }}
         run: |
           cd CPP\7zip\Bundles\LzmaCon\
+
+          echo Initialize Visual Studio environment
           "%VISUAL_STUDIO_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+
+          echo Start building
           nmake
+
+          echo Build completed
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
